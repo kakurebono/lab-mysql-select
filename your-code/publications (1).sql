@@ -703,3 +703,72 @@ ORDER BY 4 DESC
 
 SELECT * FROM authors a ;
 
+SELECT * FROM titles t ;
+
+
+--- Lab | Advanced MySQL
+--- Challenge 1 - Most Profiting Authors
+
+
+--- Step 1: Calculate the royalties of each sales for each author
+
+CREATE TEMPORARY TABLE royalties 
+
+SELECT t.title_id AS TITLE_ID,
+a.au_id AS AUTHOR_ID,
+(t.price * s.qty * t.royalty / 100 * ta.royaltyper / 100) AS ROYALTY
+FROM authors a
+LEFT JOIN titleauthor ta 
+ON ta.au_id = a.au_id 
+LEFT JOIN titles t
+ON t.title_id = ta.title_id 
+LEFT JOIN sales s
+ON s.title_id = t.title_id;
+
+
+--- Step 2: Aggregate the total royalties for each title for each author
+
+
+CREATE TEMPORARY TABLE totalRoyalties 
+
+SELECT royalties.TITLE_ID,
+royalties.AUTHOR_ID,
+SUM(ROYALTY) AS total_royalties
+FROM royalties
+GROUP BY 1,2
+
+
+--- Step 3: Calculate the total profits of each author
+
+SELECT 
+totalRoyalties.AUTHOR_ID,
+SUM(total_royalties)
+FROM totalRoyalties
+GROUP BY 1
+ORDER BY 1 DESC 
+LIMIT 3
+
+
+
+--- Challenge 2 - Alternative Solution
+
+
+
+--- Challenge 3
+
+SELECT * FROM titleauthor t;
+
+SELECT * FROM titles t2 ;
+
+SELECT * FROM sales s ;
+
+CREATE TEMPORARY TABLE most_profiting_authors
+SELECT au_id As AUTHOR_ID,
+SUM(titles.price * sales.qly * (titles.royalty/100) * (titleauthor.royaltyper/100)) AS SALES_PROFIT
+FROM database_name.titleauthor
+INNER JOIN titles on titleauthor.title_id = titles.title_id 
+INNER JOIN sales ON titleauthor.title_id = sales.title_id 
+GROUP BY 1
+ORDER BY 2 DESC;
+
+SELECT * FROM most_profiting_authors;
